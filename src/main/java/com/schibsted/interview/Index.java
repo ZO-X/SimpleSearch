@@ -1,13 +1,11 @@
 package com.schibsted.interview;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -41,10 +39,10 @@ public class Index {
         private void createInvertedIndex(String indexableDirectory) {
             this.invertedIndex = new HashMap<>();
             try (Stream<Path> filesInDirectory = Files.walk(Paths.get(indexableDirectory))) {
-                filesInDirectory
+                Long readFilesCount = filesInDirectory
                         .filter(InvertedIndexBuilder::isTxtFile)
-                        .forEach(this::parseFile);
-                printFileNumberInDirectory(indexableDirectory);
+                        .peek(this::parseFile).count();
+                printFileNumberInDirectory(readFilesCount, indexableDirectory);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -100,8 +98,8 @@ public class Index {
             return false;
         }
 
-        private static void printFileNumberInDirectory(String directory){
-            System.out.println(Objects.requireNonNull(new File(directory).list()).length + " files read in directory " + directory);
+        private static void printFileNumberInDirectory(Long filesNumber, String directory) {
+            System.out.println(filesNumber + " files read in directory " + directory);
         }
     }
 }
