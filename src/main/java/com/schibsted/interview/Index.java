@@ -40,10 +40,10 @@ public class Index {
         private void createInvertedIndex(String indexableDirectory) {
             this.invertedIndex = new HashMap<>();
             try (Stream<Path> filesInDirectory = Files.walk(Paths.get(indexableDirectory))) {
-                Long readFilesCount = filesInDirectory
+                Long processedFilesCount = filesInDirectory
                         .filter(InvertedIndexBuilder::isTxtFile)
                         .peek(this::parseFile).count();
-                printFilesCountInDirectory(readFilesCount, indexableDirectory);
+                printFilesCountInDirectory(processedFilesCount, indexableDirectory);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -61,14 +61,14 @@ public class Index {
 
         private void processWords(String[] words, String fileName, AtomicInteger wordPositionCounter) {
             for (String word : words) {
-                if (invertedIndex.containsKey(word))
+                if (invertedIndex.containsKey(word)) {
                     if (invertedIndex.get(word).containsKey(fileName))
                         /* Adding new word position for current wordInFile->positions mapping */
                         invertedIndex.get(word).get(fileName).add(wordPositionCounter.get());
-                        /* Index not contain mapping for word */
-                    else addNewWordMapping(word, fileName, wordPositionCounter.get());
-                    /* Index contain mapping for word but not for specific file */
-                else addNewWordMapping(word, fileName, wordPositionCounter.get());
+                    else /* Index not contain mapping for word */
+                        addNewWordMapping(word, fileName, wordPositionCounter.get());
+                } else /* Index contain mapping for word but not for specific file */
+                    addNewWordMapping(word, fileName, wordPositionCounter.get());
                 wordPositionCounter.getAndIncrement();
             }
         }
