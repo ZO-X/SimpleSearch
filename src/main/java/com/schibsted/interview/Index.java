@@ -51,11 +51,9 @@ public class Index {
 
         private void parseFile(Path filePath) {
             AtomicInteger wordPositionCounter = new AtomicInteger(1);
-            try (Stream<String> linesStream = lines(filePath)) {
-                linesStream
-                        .map(String::toLowerCase)
-                        .map(line -> line.replaceAll("\\p{Punct}", " ").trim().split("\\s+"))
-                        .forEach(lineWords -> processWords(lineWords, filePath.getFileName().toString(), wordPositionCounter));
+            try (Stream<String> fileLines = lines(filePath)) {
+                fileLines.map(lines -> lines.toLowerCase().replaceAll("\\p{Punct}", " ").trim().split("\\s+"))
+                        .forEach(line -> processWords(line, filePath.getFileName().toString(), wordPositionCounter));
             } catch (IOException e) {
                 e.printStackTrace();
             }
