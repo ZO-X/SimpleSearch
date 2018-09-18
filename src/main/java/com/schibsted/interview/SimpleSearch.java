@@ -1,7 +1,6 @@
 package com.schibsted.interview;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,18 +8,18 @@ import java.util.stream.IntStream;
 
 public class SimpleSearch {
 
-    private final HashMap<String, HashMap<String, HashSet<Integer>>> invertedIndex;
+    private final Index index;
 
-    public SimpleSearch(HashMap<String, HashMap<String, HashSet<Integer>>> invertedIndex) {
-        this.invertedIndex = invertedIndex;
+    public SimpleSearch(Index index) {
+        this.index = index;
     }
 
     public List<SearchResult> search(String phrase) {
         HashMap<String, Integer> results = new HashMap<>();
         String[] phraseWords = phrase.replaceAll("\\p{Punct}", " ").trim().split("\\s+");
         IntStream.range(0, phraseWords.length)
-                .filter(wordIndex -> invertedIndex.containsKey(phraseWords[wordIndex]))
-                .forEach(wordIndex -> invertedIndex.get(phraseWords[wordIndex]).keySet()
+                .filter(wordIndex -> index.getIndex().containsKey(phraseWords[wordIndex]))
+                .forEach(wordIndex -> index.getIndex().get(phraseWords[wordIndex]).keySet()
                         .forEach((fileName) -> updateFileScore(
                                 results,
                                 fileName,
@@ -35,7 +34,7 @@ public class SimpleSearch {
 
     private Integer getMaxScoreFromFile(String fileName, String[] phrase, Integer wordIndex) {
         Integer maxScore = -1;
-        for (Integer wordPosition : invertedIndex.get(phrase[wordIndex]).get(fileName)) {
+        for (Integer wordPosition : index.getIndex().get(phrase[wordIndex]).get(fileName)) {
             Integer currentScore = checkScore(phrase, wordIndex, wordPosition, fileName) * 100 / phrase.length;
             if (currentScore >= maxScore) {
                 maxScore = currentScore;
@@ -61,7 +60,7 @@ public class SimpleSearch {
     }
 
     private boolean isWordPresentAtPosition(String word, String fileName, Integer position) {
-        return invertedIndex.containsKey(word) && invertedIndex.get(word).containsKey(fileName)
-                && invertedIndex.get(word).get(fileName).contains(position);
+        return index.getIndex().containsKey(word) && index.getIndex().get(word).containsKey(fileName)
+                && index.getIndex().get(word).get(fileName).contains(position);
     }
 }

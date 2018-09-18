@@ -17,7 +17,7 @@ public class SearchConsole {
             returnError("\"" + indexableDirectory + "\" is not a valid path.");
 
         Index index = new Index.InvertedIndexBuilder(indexableDirectory).build();
-        SimpleSearch simpleSearch = new SimpleSearch(index.getIndex());
+        SimpleSearch simpleSearch = new SimpleSearch(index);
 
         try (Scanner input = new Scanner(System.in)) {
             while (true) {
