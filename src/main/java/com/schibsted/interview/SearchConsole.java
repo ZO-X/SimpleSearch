@@ -13,9 +13,8 @@ public class SearchConsole {
         }
         final String indexableDirectory = args[0];
         File directory = new File(indexableDirectory);
-        if (!directory.isDirectory()){
-            returnError("\""+indexableDirectory+"\" is not a valid path.");
-        }
+        if (!directory.isDirectory())
+            returnError("\"" + indexableDirectory + "\" is not a valid path.");
 
         Index index = new Index.InvertedIndexBuilder(indexableDirectory).build();
         SimpleSearch simpleSearch = new SimpleSearch(index.getIndex());
@@ -24,9 +23,8 @@ public class SearchConsole {
             while (true) {
                 System.out.print("search> ");
                 final String line = input.nextLine().toLowerCase();
-                if (line.equals(":exit") || line.equals(":quit")){
+                if (line.equals(":exit") || line.equals(":quit"))
                     System.exit(0);
-                }
                 printResult(simpleSearch.search(line));
             }
         }
@@ -34,9 +32,8 @@ public class SearchConsole {
 
     private static void printResult(List<SearchResult> results) {
         String format = "%-32s%s%n";
-        if (results.isEmpty()){
+        if (results.isEmpty())
             System.out.println("No results found :[");
-        }
         int rank = 1;
         for (SearchResult result : results) {
             System.out.printf(format, rank + ") " + "File: " + result.getFileName(), "score: " + result.getScore() + "%");

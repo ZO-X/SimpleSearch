@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import static java.nio.file.Files.lines;
 
 public class Index {
+    /* Mapping: Term -> Map<FileName, SetOfTermPositionsInFile> */
     private final HashMap<String, HashMap<String, HashSet<Integer>>> index;
 
     private Index(InvertedIndexBuilder builder) {
@@ -42,7 +43,7 @@ public class Index {
                 Long readFilesCount = filesInDirectory
                         .filter(InvertedIndexBuilder::isTxtFile)
                         .peek(this::parseFile).count();
-                printFileNumberInDirectory(readFilesCount, indexableDirectory);
+                printFilesCountInDirectory(readFilesCount, indexableDirectory);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -51,28 +52,26 @@ public class Index {
         private void parseFile(Path filePath) {
             AtomicInteger wordPositionCounter = new AtomicInteger(1);
             try (Stream<String> linesStream = lines(filePath)) {
-                linesStream.map(String::toLowerCase)
-                        .forEach(line -> {
-                            String words[] = line.replaceAll("\\p{Punct}", " ").trim().split("\\s+");
-                            final String fileName = filePath.getFileName().toString();
-                            for (String word : words) {
-                                if (invertedIndex.containsKey(word)) {
-                                    // Adding new word position for current wordInFile->positions mapping
-                                    if (invertedIndex.get(word).containsKey(fileName)) {
-                                        invertedIndex.get(word).get(fileName).add(wordPositionCounter.get());
-                                        // Index contain mapping for word but not for specific file
-                                    } else {
-                                        addNewWordMapping(word, fileName, wordPositionCounter.get());
-                                    }
-                                    // Index not contain mapping for word
-                                } else {
-                                    addNewWordMapping(word, fileName, wordPositionCounter.get());
-                                }
-                                wordPositionCounter.getAndIncrement();
-                            }
-                        });
+                linesStream
+                        .map(String::toLowerCase)
+                        .map(line -> line.replaceAll("\\p{Punct}", " ").trim().split("\\s+"))
+                        .forEach(lineWords -> processWords(lineWords, filePath.getFileName().toString(), wordPositionCounter));
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+
+        private void processWords(String[] words, String fileName, AtomicInteger wordPositionCounter) {
+            for (String word : words) {
+                if (invertedIndex.containsKey(word))
+                    if (invertedIndex.get(word).containsKey(fileName))
+                        /* Adding new word position for current wordInFile->positions mapping */
+                        invertedIndex.get(word).get(fileName).add(wordPositionCounter.get());
+                        /* Index not contain mapping for word */
+                    else addNewWordMapping(word, fileName, wordPositionCounter.get());
+                    /* Index contain mapping for word but not for specific file */
+                else addNewWordMapping(word, fileName, wordPositionCounter.get());
+                wordPositionCounter.getAndIncrement();
             }
         }
 
@@ -98,7 +97,7 @@ public class Index {
             return false;
         }
 
-        private static void printFileNumberInDirectory(Long filesNumber, String directory) {
+        private static void printFilesCountInDirectory(Long filesNumber, String directory) {
             System.out.println(filesNumber + " files read in directory " + directory);
         }
     }

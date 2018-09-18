@@ -17,16 +17,14 @@ public class SimpleSearch {
 
     public List<SearchResult> search(String phrase) {
         HashMap<String, Integer> results = new HashMap<>();
-        String phraseWords[] = phrase.replaceAll("\\p{Punct}"," ").trim().split("\\s+");
+        String[] phraseWords = phrase.replaceAll("\\p{Punct}", " ").trim().split("\\s+");
         IntStream.range(0, phraseWords.length)
-                .forEach(wordIndex -> {
-                    if (invertedIndex.containsKey(phraseWords[wordIndex])) {
-                        invertedIndex.get(phraseWords[wordIndex]).keySet().forEach((fileName) -> updateFileScore(
+                .filter(wordIndex -> invertedIndex.containsKey(phraseWords[wordIndex]))
+                .forEach(wordIndex -> invertedIndex.get(phraseWords[wordIndex]).keySet()
+                        .forEach((fileName) -> updateFileScore(
                                 results,
                                 fileName,
-                                getMaxScoreFromFile(fileName, phraseWords, wordIndex)));
-                    }
-                });
+                                getMaxScoreFromFile(fileName, phraseWords, wordIndex))));
 
         return results.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
