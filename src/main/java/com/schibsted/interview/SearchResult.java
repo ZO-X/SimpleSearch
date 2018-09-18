@@ -2,8 +2,8 @@ package com.schibsted.interview;
 
 public class SearchResult {
 
-    private String fileName;
-    private Integer score;
+    private final String fileName;
+    private final Integer score;
 
     public SearchResult(String fileName, Integer score) {
         this.fileName = fileName;

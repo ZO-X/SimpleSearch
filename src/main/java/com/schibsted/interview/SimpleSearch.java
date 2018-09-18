@@ -7,35 +7,32 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class SimpleSearchEngine {
+public class SimpleSearch {
 
     private final HashMap<String, HashMap<String, HashSet<Integer>>> invertedIndex;
 
-    public SimpleSearchEngine(HashMap<String, HashMap<String, HashSet<Integer>>> invertedIndex) {
+    public SimpleSearch(HashMap<String, HashMap<String, HashSet<Integer>>> invertedIndex) {
         this.invertedIndex = invertedIndex;
     }
 
     public List<SearchResult> search(String phrase) {
         HashMap<String, Integer> results = new HashMap<>();
-        String phraseWords[] = phrase.split(" ");
+        String phraseWords[] = phrase.replaceAll("\\p{Punct}"," ").trim().split("\\s+");
         IntStream.range(0, phraseWords.length)
                 .forEach(wordIndex -> {
                     if (invertedIndex.containsKey(phraseWords[wordIndex])) {
-                        invertedIndex.get(phraseWords[wordIndex]).entrySet().stream()
-                                .forEach(fileToWordPositionsMap -> updateFileScore(
-                                        results,
-                                        fileToWordPositionsMap.getKey(),
-                                        getMaxScoreFromFile(fileToWordPositionsMap.getKey(), phraseWords, wordIndex)));
+                        invertedIndex.get(phraseWords[wordIndex]).keySet().forEach((fileName) -> updateFileScore(
+                                results,
+                                fileName,
+                                getMaxScoreFromFile(fileName, phraseWords, wordIndex)));
                     }
                 });
 
-        List<SearchResult> resultList = results.entrySet().stream()
+        return results.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .limit(10)
                 .map(entry -> new SearchResult(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
-
-        return resultList;
     }
 
     private Integer getMaxScoreFromFile(String fileName, String[] phrase, Integer wordIndex) {
